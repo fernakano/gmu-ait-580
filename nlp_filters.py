@@ -1,50 +1,43 @@
-import nltk
 import pandas as pd
-from nltk.stem import WordNetLemmatizer
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
-nltk.download('stopwords')
-nltk.download('wordnet')
-nltk.download('punkt') #tokenizer
+# Instantiate the sentiment intensity analyzer with the existing lexicon
+vader = SentimentIntensityAnalyzer()
 
-lemmatizer = WordNetLemmatizer()
+# First import into a Dataframe
+df_wsb = pd.read_csv('datainputs/reddit_wsb.csv')
 
-df_nasdaq_list = pd.read_csv('nasdaqlisted.txt', delimiter='|')
-# df_other_list = pd.read_csv('otherlisted.txt', delimiter='|')
-# df_wsb = pd.read_csv('reddit_wsb.csv')
-#
-#
-# df_nasdaq_list.describe()
-# df_other_list.describe()
-# df_wsb.describe()
+# Update the lexicon
+# New words and values
+new_words = {
+    'yolo': 100,
+    'dd': 25,
+    'double down': 25,
+    'moon': 25,
+    'dh': 20,
+    'diamond hands': 20,
+    'hold': 20,
 
-y = df_nasdaq_list['Security Name'].iloc[0]
-print(nltk.word_tokenize(y))
-# x = lemmatizer.lemmatize(y)
+    # Need to understand better the following ones
+    'bullish': 10,
+    'BTFD': 5,
+    'FD': 5,
 
+    'paper hands': -5,
+    'bagholder': -5,
+    'bearish': -10,
 
+    # usual journalist stock jargon
+    'crushes': 10,
+    'beats': 5,
+    'misses': -5,
+    'trouble': -10,
+    'falls': -100,
+}
+vader.lexicon.update(new_words)
 
-
-# df_stocks = pd.concat(df_nasdaq_list, df_other_list)
-
-# print(df_wsb)
-# print(df_nasdaq_list)
-# print(df_other_list)
-# nltk.download([
-#     "names",
-#     "stopwords",
-#     "state_union",
-#     "twitter_samples",
-#     "movie_reviews",
-#     "averaged_perceptron_tagger",
-#     "vader_lexicon",
-#     "punkt",
-# ])
-
-
-
-# N = 10
-# with open("reddit_wsb.csv") as f_wsb:
-#     head = [next(f_wsb) for x in range(N)]
-#     # for line in f_wsb:
-#     #     print(line)
-# print(head)
+# scores = df_wsb['body'].astype(str).apply(vader.polarity_scores)
+scores = df_wsb['title'].apply(vader.polarity_scores)
+scores_df = pd.DataFrame.from_records(scores)
+scored_news =pd.concat([df_wsb['timestamp'],df_wsb['title'],df_wsb['body'], scores_df], axis=1)
+print(scored_news)
