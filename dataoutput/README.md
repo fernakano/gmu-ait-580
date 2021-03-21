@@ -1,0 +1,1 @@
+This directory can be used to keep output of datasets of the script.
