@@ -1,7 +1,12 @@
 from os import path
-
+import re
+import nltk
 import pandas as pd
+from nltk.corpus import stopwords
 from fuzzywuzzy import fuzz
+
+# Get Stock History from Yahoo Finance
+import yfinance as yf
 
 
 def stock_file_create():
@@ -46,29 +51,47 @@ def return_results_partial(list_of_dicts, query, threshold):
     return filtered_list_of_dicts
 
 
-def search_in_values(mydict, word):
+def search_stock(mydict, word):
     word_striped = word.upper().replace(" ", "")
-    val = list(filter(lambda item: item['Symbol'] == word, mydict))
+    val = list(filter(lambda item: item['Symbol'] == word.upper(), mydict))
     if not val:
         val = list(
             filter(lambda item: word_striped.upper() in str(item['Security Name']).upper().replace(" ", ""), mydict))
     if not val:
-        val = fuzzy_search(mydict, word, 40)
+        val = fuzzy_search(mydict, word, 80)
     if val:
         return val[0]['Symbol']
 
 
+def get_stock_dict():
+    stocks = stock_file_create()
+    return stocks.to_dict('records')
+
+
+def get_stock_hist_data(stock_key):
+    msft = yf.Ticker(stock_key)
+    # get stock info
+    msft.info
+    # get historical market data
+    return msft.history(period="max")
+
+
 def main():
     print("Create Full Stock List")
-    stocks = stock_file_create()
-    stock_dict_list = stocks.to_dict('records')
-    # stock_dict_list_strip = [{key: str(value).rsplit('. ')[0].replace(" ", "") for key, value in e.items()} for e in
-    #                          stock_dict_list]
+    stock_dict_list = get_stock_dict()
+    sentence = 'Not to distract from GME, just thought our AMC and BlackBerry or Microsoft'
+    print('Looking for sentence: ')
+    print('->', sentence)
+    sentence = sentence.lower()
+    sentence = re.sub(r"[-()\"#/@;:<>{}`+=~|.!?,]", "", sentence)
+    stop_words = set(stopwords.words('english'))
 
-    # print(stock_dict_list)
-    results = search_in_values(stock_dict_list, 'Black Berry')
-    # print(results2)
-    print(results)
+    for word in nltk.word_tokenize(sentence):
+        if word not in stop_words:
+            stock = search_stock(stock_dict_list, word)
+            if stock is not None:
+                print(word, stock)
+                print(get_stock_hist_data(stock))
 
 
 if __name__ == "__main__":
