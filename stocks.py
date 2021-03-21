@@ -63,6 +63,20 @@ def search_stock(mydict, word):
         return val[0]['Symbol']
 
 
+def search_stock_on_sentence(sentence):
+    list_stock = []
+    sentence = sentence.lower()
+    sentence = re.sub(r"[-()\"#/@;:<>{}`+=~|.!?,]", "", sentence)
+    stop_words = set(stopwords.words('english'))
+
+    for word in nltk.word_tokenize(sentence):
+        if word not in stop_words:
+            stock = search_stock(get_stock_dict(), word)
+            if stock is not None:
+                list_stock.append(stock)
+    return list_stock
+
+
 def get_stock_dict():
     stocks = stock_file_create()
     return stocks.to_dict('records')
@@ -80,18 +94,20 @@ def main():
     print("Create Full Stock List")
     stock_dict_list = get_stock_dict()
     sentence = 'Not to distract from GME, just thought our AMC and BlackBerry or Microsoft'
-    print('Looking for sentence: ')
-    print('->', sentence)
-    sentence = sentence.lower()
-    sentence = re.sub(r"[-()\"#/@;:<>{}`+=~|.!?,]", "", sentence)
-    stop_words = set(stopwords.words('english'))
+    # print('Looking for sentence: ')
+    # print('->', sentence)
+    # sentence = sentence.lower()
+    # sentence = re.sub(r"[-()\"#/@;:<>{}`+=~|.!?,]", "", sentence)
+    # stop_words = set(stopwords.words('english'))
+    #
+    # for word in nltk.word_tokenize(sentence):
+    #     if word not in stop_words:
+    #         stock = search_stock(stock_dict_list, word)
+    #         if stock is not None:
+    #             print(word, stock)
+    #             print(get_stock_hist_data(stock))
 
-    for word in nltk.word_tokenize(sentence):
-        if word not in stop_words:
-            stock = search_stock(stock_dict_list, word)
-            if stock is not None:
-                print(word, stock)
-                print(get_stock_hist_data(stock))
+    print(search_stock_on_sentence(sentence))
 
 
 if __name__ == "__main__":

@@ -1,43 +1,43 @@
 import pandas as pd
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
-# Instantiate the sentiment intensity analyzer with the existing lexicon
 vader = SentimentIntensityAnalyzer()
 
-# First import into a Dataframe
-df_wsb = pd.read_csv('datainputs/reddit_wsb.csv')
 
-# Update the lexicon
-# New words and values
-new_words = {
-    'yolo': 100,
-    'dd': 25,
-    'double down': 25,
-    'moon': 25,
-    'dh': 20,
-    'diamond hands': 20,
-    'hold': 20,
+# Instantiate the sentiment intensity analyzer with the existing lexicon
+def setup_wsb_vader_lexicon(words={}):
+    # Update the lexicon
+    # New words and values
+    new_words = {
+        # usual journalist stock jargon
+        'crushes': 10,
+        'beats': 5,
+        'misses': -5,
+        'trouble': -10,
+        'falls': -100,
+    }
 
-    # Need to understand better the following ones
-    'bullish': 10,
-    'BTFD': 5,
-    'FD': 5,
+    new_words.update(words)
+    vader.lexicon.update(new_words)
+    return vader
 
-    'paper hands': -5,
-    'bagholder': -5,
-    'bearish': -10,
 
-    # usual journalist stock jargon
-    'crushes': 10,
-    'beats': 5,
-    'misses': -5,
-    'trouble': -10,
-    'falls': -100,
-}
-vader.lexicon.update(new_words)
+def get_vader_polarity_scores(input_dataframe, column):
+    return input_dataframe[column].apply(vader.polarity_scores)
 
-# scores = df_wsb['body'].astype(str).apply(vader.polarity_scores)
-scores = df_wsb['title'].apply(vader.polarity_scores)
-scores_df = pd.DataFrame.from_records(scores)
-scored_news =pd.concat([df_wsb['timestamp'],df_wsb['title'],df_wsb['body'], scores_df], axis=1)
-print(scored_news)
+
+def get_df_from_scores(vader_scores):
+    return pd.DataFrame.from_records(vader_scores)
+
+
+def init(vader_words={}):
+    setup_wsb_vader_lexicon(vader_words)
+    return vader
+
+
+def main():
+    print('nlp_filters')
+
+
+if __name__ == "__main__":
+    main()
