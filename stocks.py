@@ -27,8 +27,9 @@ def fuzzy_search(list_of_dicts, query, threshold):
     query = query.upper()
     scores = []
     for index, item in enumerate(list_of_dicts):
-        values = list(item.values())
+        values = list(list_of_dicts[item].split(' '))
         ratios = [fuzz.ratio(str(query), str(value)) for value in values]  # ensure both are in string
+        # ratios = [fuzz.ratio(str(query), str(value)) for index, value in values]  # ensure both are in string
         scores.append({"index": index, "score": max(ratios)})
 
     filtered_scores = [item for item in scores if item['score'] >= threshold]
@@ -53,33 +54,35 @@ def return_results_partial(list_of_dicts, query, threshold):
 
 def search_stock(mydict, word):
     word_striped = word.upper().replace(" ", "")
-    val = list(filter(lambda item: item['Symbol'] == word.upper(), mydict))
+    val = mydict.get(word_striped, None)
+    if val is not None:
+        return [word_striped]
     if not val:
         val = list(
-            filter(lambda item: word_striped.upper() in str(item['Security Name']).upper().replace(" ", ""), mydict))
-    if not val:
-        val = fuzzy_search(mydict, word, 80)
-    if val:
-        return val[0]['Symbol']
+            filter(lambda item: f' {word_striped.upper()} ' in f' {str(mydict[item]).upper()} ', mydict))
+    # if not val:
+    #     val = fuzzy_search(mydict, word, 80)
+    return val
 
 
 def search_stock_on_sentence(sentence):
     list_stock = []
     sentence = sentence.lower()
-    sentence = re.sub(r"[-()\"#/@;:<>{}`+=~|.!?,]", "", sentence)
+    sentence = re.sub(r"[-()\"#/@;:<>{}`+=~|.!?,']", "", sentence)
     stop_words = set(stopwords.words('english'))
 
     for word in nltk.word_tokenize(sentence):
         if word not in stop_words:
             stock = search_stock(get_stock_dict(), word)
             if stock is not None:
-                list_stock.append(stock)
+                list_stock.extend(stock)
     return list_stock
 
 
 def get_stock_dict():
     stocks = stock_file_create()
-    return stocks.to_dict('records')
+    return dict(zip(stocks['Symbol'], stocks['Security Name']))
+    # return stocks.to_dict('records')
 
 
 def get_stock_hist_data(stock_key):
