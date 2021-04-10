@@ -1,7 +1,7 @@
 import pandas as pd
 import stocks
 import nlp_filters as nlp
-
+import time
 
 def read_wsb():
     return pd.read_csv('datainputs/reddit_wsb.csv')
@@ -40,18 +40,18 @@ def main():
 
     print("Vader Sentiment Analysis Complete!, finding stocks.....")
 
-    # TOOOOOO SLOOOWWWWWWWWWW LETS FIX THIS STOCK SEARCH using only 10 for test.
     wsb_post_stock = []
-    for index, row in scored_news.head(10).iterrows():
+    start = time.time()
+    NUMBER_POSTS=100
+    scored_news = scored_news.head(NUMBER_POSTS)
+    for index, row in scored_news.iterrows():
         print(index)
-        # TOOOOOO SLOOOWWWWWWWWWW LETS FIX THIS STOCK SEARCH, never wrote something so slow..
-        # I THINK FUZZY SEARCH IS DAMAGING MORE THAN ACTUALLY HELPING!!!!!!
-        ##### REVIEWWWW #####
         wsb_post_stock.append(','.join(stocks.search_stock_on_sentence(row['title'])))
+    end = time.time()
+    print("Time Elapsed for stock search", end-start)
+    scored_news['stock'] = wsb_post_stock
 
-    # scored_news['stock'] = wsb_post_stock
-
-    ten_scores = scored_news.head(10)
+    ten_scores = scored_news.head(NUMBER_POSTS)
     ten_scores['stock'] = wsb_post_stock
     print(ten_scores)
 
