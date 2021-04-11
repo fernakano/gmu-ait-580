@@ -95,8 +95,8 @@ def get_stock_hist_data(stock_key):
 
 def main():
     print("Create Full Stock List")
-    stock_dict_list = get_stock_dict()
-    sentence = 'Not to distract from GME, just thought our AMC and BlackBerry or Microsoft'
+    # stock_dict_list = get_stock_dict()
+    # sentence = 'Not to distract from GME, just thought our AMC and BlackBerry or Microsoft'
     # print('Looking for sentence: ')
     # print('->', sentence)
     # sentence = sentence.lower()
@@ -110,7 +110,15 @@ def main():
     #             print(word, stock)
     #             print(get_stock_hist_data(stock))
 
-    print(search_stock_on_sentence(sentence))
+    # print(search_stock_on_sentence(sentence))
+    data = get_stock_hist_data("GME")
+    data.to_csv("dataoutput/GME_stock.csv")
+    data = get_stock_hist_data("BB")
+    data.to_csv("dataoutput/BB_stock.csv")
+    data = get_stock_hist_data("AMC")
+    data.to_csv("dataoutput/AMC_stock.csv")
+    data = get_stock_hist_data("MSFT")
+    data.to_csv("dataoutput/MSFT_stock.csv")
 
 
 if __name__ == "__main__":
